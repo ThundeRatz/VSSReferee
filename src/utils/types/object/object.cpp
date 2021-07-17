@@ -1,7 +1,27 @@
+/***
+ * IEEE Very Small Size Soccer League
+ * https://vsssleague.github.io/vss/
+ *
+ * This file is part of Armorial project.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ***/
+
 #include "object.h"
 
-Object::Object(bool useKalman) {
-    _useKalman = useKalman;
+Object::Object() {
+    _lossFilter.setFirstIt();
     setInvalid();
 }
 
@@ -23,6 +43,12 @@ Velocity Object::getVelocity() {
 
 Angle Object::getOrientation() {
     Angle retn = _orientation;
+
+    return retn;
+}
+
+AngularSpeed Object::getAngularSpeed() {
+    AngularSpeed retn = _angularSpeed;
 
     return retn;
 }
@@ -55,7 +81,7 @@ void Object::updateObject(float confidence, Position pos, Angle orientation) {
                 setInvalid();
             }
             // If object is not lost already and is safe
-            else if((!isObjectLoss() && isObjectSafe()) && _useKalman){
+            else if(!isObjectLoss() && isObjectSafe()){
                 // Predict with Kalman
                 _kalmanFilter.predict();
                 _position = _kalmanFilter.getPosition();
@@ -79,23 +105,18 @@ void Object::updateObject(float confidence, Position pos, Angle orientation) {
                 // Reset loss filter
                 _lossFilter.startLoss();
 
-                if(_useKalman) {
-                    // Iterate in kalman filter
-                    _kalmanFilter.iterate(pos);
+                // Iterate in kalman filter
+                _kalmanFilter.iterate(pos);
 
-                    // Update positions, orientations, velocity and confidence
-                    _position.setPosition(true, _kalmanFilter.getPosition().x(), _kalmanFilter.getPosition().y());
-                    _velocity = _kalmanFilter.getVelocity();
-                    _orientation = orientation;
-                }
-                else {
-                    // Iterate in kalman filter (get velocity)
-                    _kalmanFilter.iterate(pos);
-                    _velocity = _kalmanFilter.getVelocity();
+                // Update positions, orientations, velocity and confidence
+                _position.setPosition(true, _kalmanFilter.getPosition().x(), _kalmanFilter.getPosition().y());
+                _velocity = _kalmanFilter.getVelocity();
 
-                    _position.setPosition(true, pos.x(), pos.y());
-                    _orientation = orientation;
-                }
+                _aSpeedTimer.stop();
+                _angularSpeed = AngularSpeed(true, (orientation.value() - _orientation.value())/_aSpeedTimer.getSeconds());
+                _aSpeedTimer.start();
+
+                _orientation = orientation;
             }
             // If object is unsafe yet (noise is running)
             else {
@@ -113,5 +134,6 @@ void Object::setInvalid() {
     _position.setInvalid();
     _velocity.setInvalid();
     _orientation.setInvalid();
+    _angularSpeed.setInvalid();
     _confidence = 0.0;
 }

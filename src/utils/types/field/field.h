@@ -1,48 +1,57 @@
+/***
+ * IEEE Very Small Size Soccer League
+ * https://vsssleague.github.io/vss/
+ *
+ * This file is part of Armorial project.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ***/
+
 #ifndef FIELD_H
 #define FIELD_H
 
 #include <QString>
 
-class FieldLine {
+class Field
+{
 public:
-  QString name;
-  double p1_x;
-  double p1_y;
-  double p2_x;
-  double p2_y;
-  double thickness;
+    Field();
+    virtual ~Field();
+    virtual QString name() const = 0;
 
-  FieldLine(const FieldLine& other);
-  FieldLine(const std::string &marking_name, double p1_x_, double p1_y_, double p2_x_, double p2_y_, double thickness_);
+    // Field dimensions
+    virtual float length() const = 0;
+    virtual float width() const = 0;
+
+    // Goal dimensions
+    virtual float goalWidth() const = 0;
+    virtual float goalDepth() const = 0;
+
+    // Center dimensions
+    virtual float centerRadius() const = 0;
+
+    // Defense area dimensions
+    virtual float defenseRadius() const = 0;
+    virtual float defenseStretch() const = 0;
+    float defenseLength() const;
+    float defenseWidth() const;
+
+    // Min/max X and Y
+    float minX() const;
+    float maxX() const;
+    float minY() const;
+    float maxY() const;
+
 };
-
-class FieldCircularArc {
-public:
-  QString name;
-  double center_x;
-  double center_y;
-  double radius;
-  double a1;
-  double a2;
-  double thickness;
-
-  FieldCircularArc(const FieldCircularArc& other);
-  FieldCircularArc(const std::string& marking_name, double center_x_, double center_y_, double radius_, double a1_, double a2_, double thickness_);
-};
-
-class FieldTriangle {
-public:
-  QString name;
-  double p1_x;
-  double p1_y;
-  double p2_x;
-  double p2_y;
-  double p3_x;
-  double p3_y;
-  double thickness;
-
-  FieldTriangle(const FieldTriangle& other);
-  FieldTriangle(const std::string& marking_name, double p1_x_, double p1_y_, double p2_x_, double p2_y_, double p3_x_, double p3_y_, double thickness_);
-};
-
 #endif // FIELD_H

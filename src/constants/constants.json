@@ -1,3 +1,4 @@
+
 {
     "Entity":{
         "threadFrequency": 60
@@ -21,7 +22,7 @@
     },
     
     "Team":{
-    	"qtPlayers": 3,
+    	"qtPlayers": 5,
     	"blueTeamName": "Team Blue",
     	"yellowTeamName": "Team Yellow",
     	"blueIsLeftSide": true

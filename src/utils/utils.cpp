@@ -1,5 +1,26 @@
+/***
+ * IEEE Very Small Size Soccer League
+ * https://vsssleague.github.io/vss/
+ *
+ * This file is part of Armorial project.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ***/
+
 #include "utils.h"
 #include <math.h>
+#define FLOAT_MARGIN 10e-4f
 
 Constants* Utils::_constants = nullptr;
 
@@ -7,15 +28,96 @@ float Utils::distance(const Position &a, const Position &b) {
     return sqrt(pow(a.x() - b.x() ,2) + pow(a.y() - b.y(), 2));
 }
 
+float Utils::scalarProduct(const Position &A, const Position &B) {
+    return (A.x() * B.x() + A.y() * B.y());
+}
+
+float Utils::distanceToLine(const Position &s1, const Position &s2, const Position &point) {
+    const Position projectedPoint = Utils::projectPointAtLine(s1, s2, point);
+    const float distance = Utils::distance(point, projectedPoint);
+
+    return (distance <= 0.001f) ? 0 : distance;
+}
+
+float Utils::distanceToSegment(const Position &s1, const Position &s2, const Position &point) {
+    const Position projectedPoint = Utils::projectPointAtLine(s1, s2, point);
+    if(Utils::isPointAtSegment(s1, s2, projectedPoint)) {
+        return distanceToLine(s1, s2, point);
+    } else {
+        const float d1 = Utils::distance(point, s1);
+        const float d2 = Utils::distance(point, s2);
+        return (d1 <= d2)? d1 : d2;
+    }
+}
+
+float Utils::getAngle(const Position &a, const Position &b)	{
+    return atan2(b.y()-a.y(), b.x()-a.x());
+}
+
+float Utils::angleDiff(const float A, const float B) {
+    float diff = fabs(B - A);
+    if(diff > static_cast<float>(M_PI))
+        diff = 2*static_cast<float>(M_PI) - diff;
+    return diff;
+}
+
+float Utils::to180Range(float angle) {
+    angle = fmod(angle, 2 * M_PI);
+    if (angle < -M_PI) {
+        angle = angle + 2 * M_PI;
+    } else if (angle > M_PI) {
+        angle = angle - 2 * M_PI;
+    }
+    return angle;
+}
+
+void Utils::angleLimitZeroTwoPi(float *angle) {
+    while(*angle < 0)
+        *angle += 2.0*M_PI;
+    while(*angle > 2.0*M_PI)
+        *angle -= 2.0*M_PI;
+}
+
+Position Utils::rotatePoint(Position point, float angle){
+    float xNew = point.x() * cos(angle) - point.y() * sin(angle);
+    float yNew = point.x() * sin(angle) - point.y() * cos(angle);
+
+    return Position(true, xNew, yNew);
+}
+
+Position Utils::threePoints(const Position &near, const Position &far, float distance, float beta) {
+    Angle alpha(true, atan2(far.y()-near.y(), far.x()-near.x()));
+    Angle gama(true, alpha.value()+beta);
+    Position p(true, near.x()+distance*cos(gama.value()), near.y()+distance*sin(gama.value()));
+    return p;
+}
+
+Position Utils::projectPointAtLine(const Position &s1, const Position &s2, const Position &point) {
+    const Position a(true, point.x() - s1.x(), point.y() - s1.y());
+    const Position b(true, s2.x() - s1.x(), s2.y() - s1.y());
+    const float bModule = sqrt(pow(b.x(), 2) + pow(b.y(), 2));
+    const Position bUnitary(true, b.x() / bModule, b.y() / bModule);
+    const float scalar = Utils::scalarProduct(a, bUnitary);
+
+    return Position(true, s1.x() + scalar * bUnitary.x(), s1.y() + scalar * bUnitary.y());
+}
+
+Position Utils::projectPointAtSegment(const Position &s1, const Position &s2, const Position &point) {
+    const Position projectedPoint = Utils::projectPointAtLine(s1, s2, point);
+    if(Utils::isPointAtSegment(s1, s2, projectedPoint)) {
+        return projectedPoint;
+    } else {
+        const float d1 = Utils::distance(projectedPoint, s1);
+        const float d2 = Utils::distance(projectedPoint, s2);
+        return (d1 <= d2) ? s1 : s2;
+    }
+}
+
 bool Utils::isPointAtLine(const Position &s1, const Position &s2, const Position &point) {
     const Position projectedPoint = Utils::projectPointAtLine(s1, s2, point);
     const float dist = Utils::distance(point, projectedPoint);
 
     return (dist <= 0.001f);
-}
-
-float Utils::scalarProduct(const Position &A, const Position &B) {
-    return (A.x() * B.x() + A.y() * B.y());
 }
 
 bool Utils::isPointAtSegment(const Position &s1, const Position &s2, const Position &point) {
@@ -43,125 +145,69 @@ bool Utils::isPointAtSegment(const Position &s1, const Position &s2, const Posit
     }
 }
 
-Position Utils::projectPointAtLine(const Position &s1, const Position &s2, const Position &point) {
-    const Position a(true, point.x() - s1.x(), point.y() - s1.y());
-    const Position b(true, s2.x() - s1.x(), s2.y() - s1.y());
-    const float bModule = sqrt(pow(b.x(), 2) + pow(b.y(), 2));
-    const Position bUnitary(true, b.x() / bModule, b.y() / bModule);
-    const float scalar = Utils::scalarProduct(a, bUnitary);
-
-    return Position(true, s1.x() + scalar * bUnitary.x(), s1.y() + scalar * bUnitary.y());
+void Utils::limitValue(float *value, float minValue, float maxValue) {
+    if(*value > maxValue)
+        *value = maxValue;
+    else if(*value < minValue)
+        *value = minValue;
 }
 
-Position Utils::projectPointAtSegment(const Position &s1, const Position &s2, const Position &point) {
-    const Position projectedPoint = Utils::projectPointAtLine(s1, s2, point);
-    if(Utils::isPointAtSegment(s1, s2, projectedPoint)) {
-        return projectedPoint;
-    } else {
-        const float d1 = Utils::distance(projectedPoint, s1);
-        const float d2 = Utils::distance(projectedPoint, s2);
-        return (d1 <= d2) ? s1 : s2;
+Position Utils::segmentsIntersect(Position sA1, Position sA2, Position sB1, Position sB2) {
+    float denominador = (sB2.y()-sB1.y())*(sA2.x() - sA1.x()) - (sB2.x() - sB1.x())*(sA2.y()-sA1.y());
+
+    if (denominador != 0.0f){ // retas se interceptam
+        float u = ((sB2.x() - sB1.x())*(sA1.y() - sB1.y()) - (sB2.y() - sB1.y())*(sA1.x() - sB1.x()));
+        float v = ((sA2.x() - sA1.x())*(sA1.y() - sB1.y()) - (sA2.y() - sA1.y())*(sA1.x() - sB1.x()));
+
+        if(u != 0.0f){   //
+            float xIntersec = sA1.x() + (u/denominador)*(sA2.x()-sA1.x());
+            float yIntersec = sA1.y() + (u/denominador)*(sA2.y()-sA1.y());
+            if(xIntersec <= std::min(std::max(sA1.x(), sA2.x()), std::max(sB1.x(), sB2.x()))
+               && xIntersec >= std::max(std::min(sA1.x(), sA2.x()), std::min(sB1.x(), sB2.x()))) {
+                return Position(true, xIntersec, yIntersec);
+            }else {
+                return Position(false, xIntersec, yIntersec);
+            }
+        }else if(v != 0.0f){
+            float xIntersec = sB1.x() + (v/denominador)*(sB2.x()-sB1.x());
+            float yIntersec = sB1.y() + (v/denominador)*(sB2.y()-sB1.y());
+            if(xIntersec <= std::min(std::max(sA1.x(), sA2.x()), std::max(sB1.x(), sB2.x()))
+               && xIntersec >= std::max(std::min(sA1.x(), sA2.x()), std::min(sB1.x(), sB2.x()))) {
+                return Position(true, xIntersec, yIntersec);
+            }else {
+                return Position(false, xIntersec, yIntersec);
+            }
+        }else{ // caso especial -> as linhas sao coincidentes
+            return Position(true, sA1.x(), sA1.y());
+        }
+
+    }else{ //Os segmentos sao paralelos
+        return Position(false, 0.0f,0.0f);
     }
 }
 
-float Utils::distanceToLine(const Position &s1, const Position &s2, const Position &point) {
-    const Position projectedPoint = Utils::projectPointAtLine(s1, s2, point);
-    const float distance = Utils::distance(point, projectedPoint);
+Position Utils::hasInterceptionSegments(const Position &s1, const Position &s2, const Position &s3, const Position &s4){
+    float denominador = (s4.y()-s3.y())*(s2.x() - s1.x()) - (s4.x() - s3.x())*(s2.y()-s1.y());
 
-    return (distance <= 0.001f) ? 0 : distance;
-}
+    if (denominador!=0.0f){ // segmentos se interceptam
+        float u = ((s4.x() - s3.x())*(s1.y() - s3.y()) - (s4.y() - s3.y())*(s1.x() - s3.x()));
+        float v = ((s2.x() - s1.x())*(s1.y() - s3.y()) - (s2.y() - s1.y())*(s1.x() - s3.x()));
 
-float Utils::distanceToSegment(const Position &s1, const Position &s2, const Position &point) {
-    const Position projectedPoint = Utils::projectPointAtLine(s1, s2, point);
-    if(Utils::isPointAtSegment(s1, s2, projectedPoint)) {
-        return distanceToLine(s1, s2, point);
-    } else {
-        const float d1 = Utils::distance(point, s1);
-        const float d2 = Utils::distance(point, s2);
-        return (d1 <= d2)? d1 : d2;
+        if(u != 0.0f){
+            float xIntersec = s1.x() + (u/denominador)*(s2.x()-s1.x());
+            float yIntersec = s1.y() + (u/denominador)*(s2.y()-s1.y());
+            return Position(true, xIntersec, yIntersec);
+        }else if(v != 0.0f){
+            float xIntersec = s3.x() + (v/denominador)*(s4.x()-s3.x());
+            float yIntersec = s3.y() + (v/denominador)*(s4.y()-s3.y());
+            return Position(true, xIntersec, yIntersec);
+        }else{ // caso especial -> as linhas sao coincidentes
+            return Position(true, s1.x(), s1.y());
+        }
+
+    }else{ //Os segmentos sao paralelos
+        return Position(false, 0.0f,0.0f);
     }
-}
-
-bool Utils::isInsideGoalArea(VSSRef::Color teamColor, Position pos){
-    float goal_x = (Field_Default_3v3::kFieldLength/2.0 - Field_Default_3v3::kDefenseRadius) / 1000.0;
-    float goal_y = (Field_Default_3v3::kDefenseStretch / 2.0) / 1000.0;
-
-    if(teamColor == VSSRef::Color::BLUE){
-        if(getConstants()->blueIsLeftSide()){
-            if(pos.x() < -goal_x && abs(pos.y()) < goal_y)
-                return true;
-        }
-        else{
-            if(pos.x() > goal_x && abs(pos.y()) < goal_y)
-                return true;
-        }
-    }
-    else if(teamColor == VSSRef::Color::YELLOW){
-        if(getConstants()->blueIsLeftSide()){
-            if(pos.x() > goal_x && abs(pos.y()) < goal_y)
-                return true;
-        }
-        else{
-            if(pos.x() < -goal_x && abs(pos.y()) < goal_y)
-                return true;
-        }
-    }
-
-    return false;
-}
-
-bool Utils::isBallInsideGoal(VSSRef::Color teamColor, Position pos) {
-    float goal_x = (Field_Default_3v3::kFieldLength/2.0) / 1000.0 + getConstants()->ballRadius();
-    float goal_y = (Field_Default_3v3::kDefenseStretch / 2.0) / 1000.0;
-
-    if(teamColor == VSSRef::Color::BLUE){
-        if(getConstants()->blueIsLeftSide()){
-            if(pos.x() < -goal_x && abs(pos.y()) < goal_y)
-                return true;
-        }
-        else{
-            if(pos.x() > goal_x && abs(pos.y()) < goal_y)
-                return true;
-        }
-    }
-    else if(teamColor == VSSRef::Color::YELLOW){
-        if(getConstants()->blueIsLeftSide()){
-            if(pos.x() > goal_x && abs(pos.y()) < goal_y)
-                return true;
-        }
-        else{
-            if(pos.x() < -goal_x && abs(pos.y()) < goal_y)
-                return true;
-        }
-    }
-
-    return false;
-}
-
-Position Utils::rotatePoint(Position point, float angle){
-    float xNew = point.x() * cos(angle) - point.y() * sin(angle);
-    float yNew = point.x() * sin(angle) - point.y() * cos(angle);
-
-    return Position(true, xNew, yNew);
-}
-
-VSSRef::Quadrant Utils::getBallQuadrant(Position ballPos){
-    /// Quadrants
-    // Quadrant 1 (top-right)
-    // Quadrant 2 (top-left)
-    // Quadrant 3 (bot-left)
-    // Quadrant 4 (bot-right)
-
-    if(ballPos.x() > 0.0 && ballPos.y() > 0.0)
-        return VSSRef::Quadrant::QUADRANT_1;
-    else if(ballPos.x() <= 0.0 && ballPos.y() > 0.0)
-        return VSSRef::Quadrant::QUADRANT_2;
-    else if(ballPos.x() <= 0.0 && ballPos.y() <= 0.0)
-        return VSSRef::Quadrant::QUADRANT_3;
-    else if(ballPos.x() > 0.0 && ballPos.y() <= 0.0)
-        return VSSRef::Quadrant::QUADRANT_4;
-
-    return VSSRef::Quadrant::NO_QUADRANT;
 }
 
 void Utils::setConstants(Constants *constants){
@@ -178,4 +224,3 @@ Constants* Utils::getConstants() {
 
     return nullptr;
 }
-

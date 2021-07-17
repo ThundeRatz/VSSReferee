@@ -29,7 +29,7 @@
 #include <src/utils/types/field/field.h>
 #include <src/utils/types/position/position.h>
 #include <src/utils/types/fieldside/fieldside.h>
-#include <include/packet.pb.h>
+#include <proto/packet.pb.h>
 #include <src/constants/constants.h>
 
 class Locations

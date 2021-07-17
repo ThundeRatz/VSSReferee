@@ -27,7 +27,7 @@
 #include <src/constants/constants.h>
 #include <src/utils/types/color/color.h>
 #include <src/utils/types/object/object.h>
-#include <include/packet.pb.h>
+#include <proto/packet.pb.h>
 
 class Vision : public Entity
 {

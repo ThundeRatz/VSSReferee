@@ -29,8 +29,7 @@
 #include <src/utils/types/object/object.h>
 #include <src/utils/types/color/color.h>
 #include <src/entities/world/worldmap/locations/locations.h>
-
-#include <include/packet.pb.h>
+#include <proto/packet.pb.h>
 
 class WorldMap : public QObject
 {

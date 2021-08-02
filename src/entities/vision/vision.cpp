@@ -38,13 +38,13 @@ Vision::Vision(Constants *constants) : Entity(ENT_VISION) {
     _yellowControl = (bool *) malloc(getConstants()->qtPlayers() * sizeof(bool));
 
     // Inserting teams for map
-    _playerObjects.insert(Colors::Color::BLUE, new QMap<quint8, Object*>());
-    _playerObjects.insert(Colors::Color::YELLOW, new QMap<quint8, Object*>());
+    _playerObjects.insert(VSSRef::Color::BLUE, new QMap<quint8, Object*>());
+    _playerObjects.insert(VSSRef::Color::YELLOW, new QMap<quint8, Object*>());
 
     // Inserting players in map
-    for(int i = Colors::Color::YELLOW; i <= Colors::Color::BLUE; i++) {
+    for(int i = VSSRef::Color::BLUE; i <= VSSRef::Color::YELLOW; i++) {
         for(int j = 0; j < getConstants()->qtPlayers(); j++) {
-            QMap<quint8, Object*> *teamMap = _playerObjects.value(Colors::Color(i));
+            QMap<quint8, Object*> *teamMap = _playerObjects.value(VSSRef::Color(i));
             teamMap->insert(j, new Object());
         }
     }
@@ -64,10 +64,10 @@ Vision::~Vision() {
     free(_yellowControl);
 
     // Get teams list
-    QList<Colors::Color> teamList = _playerObjects.keys();
+    QList<VSSRef::Color> teamList = _playerObjects.keys();
 
     // For each team
-    for(QList<Colors::Color>::iterator it = teamList.begin(); it != teamList.end(); it++) {
+    for(QList<VSSRef::Color>::iterator it = teamList.begin(); it != teamList.end(); it++) {
         // Take team associated objects
         QMap<quint8, Object*> *teamObjects = _playerObjects.value((*it));
         QList<Object*> objects = teamObjects->values();
@@ -95,7 +95,6 @@ QString Vision::name() {
 void Vision::initialization() {
     // Bind and connect socket in network
     bindAndConnect();
-
     std::cout << Text::cyan("[VISION] ", true) + Text::bold("Started at address '" + _visionAddress.toStdString() + "' and port '" + std::to_string(_visionPort) + "'.") + '\n';
 }
 
@@ -134,7 +133,7 @@ void Vision::loop() {
 
                 // Take player and update
                 fira_message::Robot robot = visionFrame.robots_blue(i);
-                updatePlayer(Colors::Color::BLUE, robot.robot_id(), robot);
+                updatePlayer(VSSRef::Color::BLUE, robot.robot_id(), robot);
             }
 
             // Update yellow team received players
@@ -144,24 +143,24 @@ void Vision::loop() {
 
                 // Take player and update
                 fira_message::Robot robot = visionFrame.robots_yellow(i);
-                updatePlayer(Colors::Color::YELLOW, robot.robot_id(), robot);
+                updatePlayer(VSSRef::Color::YELLOW, robot.robot_id(), robot);
             }
 
             // Update not appeared objects for both teams yellow and blue
-            updateNotAppeared(Colors::Color::YELLOW);
-            updateNotAppeared(Colors::Color::BLUE);
+            updateNotAppeared(VSSRef::Color::YELLOW);
+            updateNotAppeared(VSSRef::Color::BLUE);
 
             // Send players
-            for(int i = Colors::Color::YELLOW; i <= Colors::Color::BLUE; i++) {
+            for(int i = VSSRef::Color::BLUE; i <= VSSRef::Color::YELLOW; i++) {
                 // Generate list of objects
                 QList<Object> playerObjects;
                 for(int j = 0; j < getConstants()->qtPlayers(); j++) {
-                    Object playerObject = *(_playerObjects.value(Colors::Color(i))->value(j));
+                    Object playerObject = *(_playerObjects.value(VSSRef::Color(i))->value(j));
                     playerObjects.append(playerObject);
                 }
 
                 // Send list
-                emit sendPlayers(Colors::Color(i), playerObjects);
+                emit sendPlayers(VSSRef::Color(i), playerObjects);
             }
 
             // Update not appeared ball
@@ -210,7 +209,7 @@ void Vision::clearControls() {
     _ballControl = false;
 }
 
-void Vision::updatePlayer(Colors::Color teamColor, quint8 playerId, fira_message::Robot player) {
+void Vision::updatePlayer(VSSRef::Color teamColor, quint8 playerId, fira_message::Robot player) {
     // Check if team is registered in map
     if(!_playerObjects.contains(teamColor)) {
         _playerObjects.insert(teamColor, new QMap<quint8, Object*>());

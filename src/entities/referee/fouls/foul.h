@@ -34,15 +34,13 @@ public:
 
     // Internal
     virtual QString name() = 0;
+    virtual void configure() = 0;
     virtual void run() = 0;
 
     // Penalties info
     /// TODO: describe the new protobuf packet
 
 private:
-    // Internal future-inherited methods
-    virtual void configure() = 0;
-
     // Constants
     Constants *_constants;
     Constants* getConstants();

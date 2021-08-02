@@ -56,9 +56,9 @@ private:
     quint16 _visionPort;
 
     // Objects control
-    QMap<Colors::Color, QMap<quint8, Object*>*> _playerObjects;
+    QMap<VSSRef::Color, QMap<quint8, Object*>*> _playerObjects;
     Object _ballObject;
-    void updatePlayer(Colors::Color teamColor, quint8 playerId, fira_message::Robot player);
+    void updatePlayer(VSSRef::Color teamColor, quint8 playerId, fira_message::Robot player);
     void updateBall(fira_message::Ball ball);
     void updateNotAppeared(Color color);
 

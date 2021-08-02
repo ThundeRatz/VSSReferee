@@ -18,15 +18,47 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ***/
 
-
 #ifndef GAMEINFO_H
 #define GAMEINFO_H
 
+#include <QObject>
+#include <QTimer>
 
-class GameInfo
+#include <src/constants/constants.h>
+#include <src/utils/types/color/color.h>
+#include <proto/vssref_packet.pb.h>
+
+class GameInfo : public QObject
 {
+    Q_OBJECT
 public:
-    GameInfo();
+    GameInfo(Constants *constants);
+
+    // Half, timestamp and half kickoff management
+    void setupNextStage();
+    void updateTimeStamp();
+    int getRemainingTime();
+    int getStageTime();
+
+    // Command management
+    VSSRef::ref_to_team::VSSRef_Packet packet();
+    void setPacket(VSSRef::ref_to_team::VSSRef_Packet packet);
+    bool isGameOn();
+
+private:
+    // Game management
+    VSSRef::ref_to_team::VSSRef_Packet _packet;
+    Color _kickoffColor;
+    QTimer _gameTimer;
+    int _lastTimeStamp;
+
+    // Constants
+    Constants *_constants;
+    Constants* getConstants();
+
+public slots:
+    void startGame();
+    void stopGame();
 };
 
 #endif // GAMEINFO_H

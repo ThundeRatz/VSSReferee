@@ -21,15 +21,15 @@
 #ifndef COLOR_H
 #define COLOR_H
 
-#include <src/utils/types/color/colors.h>
+#include <proto/vssref_common.pb.h>
 
 class Color
 {
 public:
-    Color(Colors::Color color = Colors::NONE);
+    Color(VSSRef::Color color = VSSRef::Color::NONE);
 
     // Opposite color
-    Colors::Color getColor() const;
+    VSSRef::Color getColor() const;
     Color oppositeColor() const;
 
     // Bool getters
@@ -38,7 +38,7 @@ public:
     bool isNone() const;
 
 private:
-    Colors::Color _color;
+    VSSRef::Color _color;
 };
 
 #endif // COLOR_H

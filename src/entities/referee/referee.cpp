@@ -28,6 +28,17 @@ Referee::Referee(WorldMap *worldMap, Constants *constants) : Entity(ENT_REFEREE)
     // Set network data
     _refereeAddress = getConstants()->refereeAddress();
     _refereePort = getConstants()->refereePort();
+
+    // Setup gameInfo
+    _gameInfo = new GameInfo(getConstants());
+
+    // Init signal mapper
+    _mapper = new QSignalMapper();
+}
+
+Referee::~Referee() {
+    // Delete gameInfo
+    delete _gameInfo;
 }
 
 QString Referee::name() {
@@ -38,12 +49,29 @@ void Referee::initialization() {
     // Connect to network
     connectToNetwork();
 
+    // Init aux timer
+    _timer = new QTimer();
+    _timerStarted = false;
+
     // Debug network info
     std::cout << Text::blue("[REFEREE] ", true) + Text::bold("Module started at address '" + _refereeAddress.toStdString() + "' and port '" + std::to_string(_refereePort) + "'.") + '\n';
 }
 
 void Referee::loop() {
+    // Update timestamp [internally gameInfo will setup next stage if needed]
+    _gameInfo->updateTimeStamp();
 
+    /// TODO: process
+    // If game is on, run all fouls
+    if(_gameInfo->isGameOn()) {
+        runFouls();
+    }
+    else {
+
+    }
+
+    // Send packet to network
+    sendPacketToNetwork();
 }
 
 void Referee::finalization() {
@@ -75,6 +103,88 @@ void Referee::disconnectFromNetwork() {
 
     // Delete socket
     delete _refereeSocket;
+}
+
+void Referee::sendPacketToNetwork() {
+    // Taking command from GameInfo
+    VSSRef::ref_to_team::VSSRef_Packet packet = _gameInfo->packet();
+
+    // Serializing packet to string
+    std::string datagram;
+    packet.SerializeToString(&datagram);
+
+    // Send via socket
+    if(_refereeSocket->write(datagram.c_str(), static_cast<quint64>(datagram.length())) == -1) {
+        std::cout << Text::blue("[REFEREE] ", true) + Text::red("Failed to write to socket.", true) + '\n';
+        return ;
+    }
+
+    // Debug sent foul
+    std::cout << Text::blue("[REFEREE] ", true) + Text::yellow("[" + VSSRef::Stage_Name(packet.gamestage()) + ":" + std::to_string(packet.timestamp()) + "] ", true) + Text::bold("Sent command '" + VSSRef::Command_Name(packet.command()) + "' for team '" + VSSRef::Color_Name(packet.commandcolor()) + "' at quadrant '" + VSSRef::Quadrant_Name(packet.commandquadrant())) + "'\n";
+}
+
+void Referee::addFoul(Foul *foul, int priority) {
+    // Check if priority already exists in hash
+    if(!_fouls.contains(priority)) {
+        // Create it
+        _fouls.insert(priority, new QVector<Foul*>());
+    }
+
+    // Taking Foul vector
+    QVector<Foul*> *foulVector = _fouls.value(priority);
+
+    // Check if foul is already added
+    if(!foulVector->contains(foul)) {
+        // Connect in map
+        connect(foul, SIGNAL(foulOccured()), _mapper, SLOT(map()), Qt::UniqueConnection);
+        _mapper->setMapping(foul, foul);
+        connect(_mapper, SIGNAL(mapped(QObject *)), this, SLOT(processFoul(QObject *)), Qt::UniqueConnection);
+
+        // Call configure method
+        foul->configure();
+
+        // Add it
+        foulVector->push_back(foul);
+    }
+}
+
+void Referee::runFouls() {
+    // For each check, call run()
+    QList<int> priorityKeys = _fouls.keys();
+    QList<int>::iterator it;
+    for(it = priorityKeys.begin(); it != priorityKeys.end(); it++) {
+        QVector<Foul*> *fouls = _fouls.value((*it));
+        for(int i = 0; i < fouls->size(); i++) {
+            Foul *atFoul = fouls->at(i);
+            atFoul->run();
+        }
+    }
+}
+
+void Referee::resetFouls() {
+    // For each check, call configure() (reset it)
+    QList<int> priorityKeys = _fouls.keys();
+    QList<int>::iterator it;
+    for(it = priorityKeys.begin(); it != priorityKeys.end(); it++) {
+        QVector<Foul*> *fouls = _fouls.value((*it));
+        for(int i = 0; i < fouls->size(); i++) {
+            Foul *atFoul = fouls->at(i);
+            atFoul->configure();
+        }
+    }
+}
+
+void Referee::deleteFouls() {
+    QList<int> priorityKeys = _fouls.keys();
+    QList<int>::iterator it;
+
+    for(it = priorityKeys.begin(); it != priorityKeys.end(); it++) {
+        QVector<Foul*> *fouls = _fouls.take((*it));
+        for(int i = 0; i < fouls->size(); i++) {
+            Foul *atFoul = fouls->at(i);
+            delete atFoul;
+        }
+    }
 }
 
 Constants* Referee::getConstants() {

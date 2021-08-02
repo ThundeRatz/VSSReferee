@@ -22,6 +22,8 @@
 #define REFEREE_H
 
 #include <QUdpSocket>
+#include <QSignalMapper>
+
 #include <src/entities/entity.h>
 #include <src/entities/referee/gameinfo/gameinfo.h>
 #include <src/entities/referee/fouls/foul.h>
@@ -30,6 +32,7 @@ class Referee : public Entity
 {
 public:
     Referee(WorldMap *worldMap, Constants *constants);
+    ~Referee();
     QString name();
 
 private:
@@ -52,9 +55,23 @@ private:
     quint16 _refereePort;
     void connectToNetwork();
     void disconnectFromNetwork();
+    void sendPacketToNetwork();
 
-    // GameInfo
-    GameInfo _gameInfo;
+    // Fouls management
+    QSignalMapper *_mapper;
+    QHash<int, QVector<Foul*>*> _fouls;
+    void addFoul(Foul *foul, int priority);
+    void runFouls();
+    void resetFouls();
+    void deleteFouls();
+
+    // GameInfo and transitions management timer
+    GameInfo *_gameInfo;
+    QTimer *_timer;
+    bool _timerStarted;
+
+public slots:
+    void processFoul(QObject *checker);
 };
 
 #endif // REFEREE_H

@@ -20,27 +20,27 @@
 
 #include "color.h"
 
-Color::Color(Colors::Color color) {
+Color::Color(VSSRef::Color color) {
     _color = color;
 }
 
-Colors::Color Color::getColor() const {
+VSSRef::Color Color::getColor() const {
     return _color;
 }
 
 Color Color::oppositeColor() const {
-    return Color(_color == Colors::BLUE ? Colors::YELLOW : Colors::BLUE);
+    return Color(_color == VSSRef::Color::BLUE ? VSSRef::Color::YELLOW : VSSRef::Color::BLUE);
 }
 
 bool Color::isBlue() const {
-    return (_color == Colors::BLUE);
+    return (_color == VSSRef::Color::BLUE);
 }
 
 bool Color::isYellow() const {
-    return (_color == Colors::YELLOW);
+    return (_color == VSSRef::Color::YELLOW);
 }
 
 bool Color::isNone() const {
-    return (_color == Colors::NONE);
+    return (_color == VSSRef::Color::NONE);
 }
 

@@ -51,7 +51,7 @@ public:
 
 private:
     // Objects internal vars
-    QMap<Colors::Color, QMap<quint8, Object>*> _playerObjects;
+    QMap<VSSRef::Color, QMap<quint8, Object>*> _playerObjects;
     Object _ballObject;
 
     // Constants

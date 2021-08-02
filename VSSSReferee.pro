@@ -45,8 +45,8 @@ SOURCES += \
         proto/common.pb.cc \
         proto/packet.pb.cc \
         proto/replacement.pb.cc \
-        proto/vssref_command.pb.cc \
         proto/vssref_common.pb.cc \
+        proto/vssref_packet.pb.cc \
         proto/vssref_placement.pb.cc \
         src/constants/constants.cpp \
         src/core.cpp \
@@ -92,8 +92,8 @@ HEADERS += \
     proto/common.pb.h \
     proto/packet.pb.h \
     proto/replacement.pb.h \
-    proto/vssref_command.pb.h \
     proto/vssref_common.pb.h \
+    proto/vssref_packet.pb.h \
     proto/vssref_placement.pb.h \
     src/core.h \
     src/entities/entity.h \
@@ -118,7 +118,6 @@ HEADERS += \
     src/utils/types/angle/angle.h \
     src/utils/types/angularspeed/angularspeed.h \
     src/utils/types/color/color.h \
-    src/utils/types/color/colors.h \
     src/utils/types/field/3v3/field_3v3.h \
     src/utils/types/field/5v5/field_5v5.h \
     src/utils/types/field/field.h \

@@ -27,9 +27,9 @@ WorldMap::WorldMap(Field *field, Constants *constants) {
     _constants = constants;
 
     // Fill player objects
-    for(int i = Colors::Color::YELLOW; i <= Colors::Color::BLUE; i++) {
-        _playerObjects.insert(Colors::Color(i), new QMap<quint8, Object>());
-        QMap<quint8, Object> *_teamObjects = _playerObjects.value(Colors::Color(i));
+    for(int i = VSSRef::Color::BLUE; i <= VSSRef::Color::YELLOW; i++) {
+        _playerObjects.insert(VSSRef::Color(i), new QMap<quint8, Object>());
+        QMap<quint8, Object> *_teamObjects = _playerObjects.value(VSSRef::Color(i));
         for(int j = 0; j < getConstants()->qtPlayers(); j++) {
             Object object;
             object.setInvalid();
@@ -43,10 +43,10 @@ WorldMap::WorldMap(Field *field, Constants *constants) {
 
 WorldMap::~WorldMap() {
     // Get teams list
-    QList<Colors::Color> teamList = _playerObjects.keys();
+    QList<VSSRef::Color> teamList = _playerObjects.keys();
 
     // For each team
-    for(QList<Colors::Color>::iterator it = teamList.begin(); it != teamList.end(); it++) {
+    for(QList<VSSRef::Color>::iterator it = teamList.begin(); it != teamList.end(); it++) {
         // Take team associated objects
         QMap<quint8, Object> *teamObjects = _playerObjects.value((*it));
 

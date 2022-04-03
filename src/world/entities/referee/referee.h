@@ -17,12 +17,14 @@ class Referee : public Entity
 public:
     Referee(Vision *vision, Replacer *replacer, SoccerView *soccerView, Constants *constants);
     bool isGameOn();
+    bool isEndGame();
 
 private:
     // Entity inherited methods
     void initialization();
     void loop();
     void finalization();
+    void print_results();
 
     // Vision
     Vision *_vision;

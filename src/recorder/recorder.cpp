@@ -1,4 +1,6 @@
 #include "recorder.h"
+#include <include/packet.pb.h>
+#include <chrono>
 
 Recorder::Recorder(QString fileName, QString visionAddress, quint16 visionPort, QString refereeAddress, quint16 refereePort) {
     // Set objects as nullptr
@@ -95,18 +97,37 @@ void Recorder::connectToVisionNetwork() {
     QObject::connect(_visionSocket, &QUdpSocket::readyRead, [this](){
         // Creating datagram var
         QNetworkDatagram datagram;
+        fira_message::sim_to_ref::Environment environmentData;
 
-        // Reading datagram and checking if it is valid
-        datagram = _visionSocket->receiveDatagram();
-        if(!datagram.isValid()) {
-            return ;
+        bool more = false;
+
+        while(_visionSocket->hasPendingDatagrams()) {
+
+            if (more) {
+                std::cout << "more than one" << std::endl;
+            }
+
+            // Reading datagram and checking if it is valid
+            datagram = _visionSocket->receiveDatagram();
+            if(!datagram.isValid()) {
+                return ;
+            }
+
+            // Parsing datagram and checking if it worked properly
+            if(environmentData.ParseFromArray(datagram.data().data(), datagram.data().size()) == false) {
+                std::cout << Text::blue("[VISION] ", true) << Text::red("Wrapper packet parsing error.", true) + '\n';
+                continue;
+            }
+
+            // Prepare vars
+            QByteArray data = datagram.data();
+            std::chrono::milliseconds step(environmentData.step());
+            qint64 timeStamp = step.count();
+
+            writeDatagram(MESSAGE_VISION, data, timeStamp);
+
+            more = true;
         }
-
-        // Prepare vars
-        QByteArray data = datagram.data();
-        qint64 timeStamp = Timer::systemTime();
-
-        writeDatagram(MESSAGE_VISION, data, timeStamp);
     });
 
     std::cout << Text::cyan("[VISION] ", true) + Text::bold("Started at address '" + _visionAddress.toStdString() + "' and port '" + std::to_string(_visionPort) + "'.") + '\n';

@@ -21,6 +21,9 @@ public:
     static QString getActualTime();
     static qint64 systemTime();
 
+    static std::chrono::high_resolution_clock::time_point simulator_time;
+    static bool use_simulator_time;
+
 private:
     //timespec _time1;
     //timespec _time2;

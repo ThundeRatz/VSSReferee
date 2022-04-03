@@ -48,6 +48,9 @@ void Constants::readRefereeConstants() {
     _transitionTime = refereeMap["transitionTime"].toFloat();
     std::cout << Text::purple("[CONSTANTS] ", true) << Text::bold("Loaded transitionTime: '" + std::to_string(_transitionTime) + "'\n");
 
+    _headless = refereeMap["headless"].toBool();
+    std::cout << Text::purple("[CONSTANTS] ", true) << Text::bold("Is headless: " + std::to_string(_headless) + "\n");
+
     // Game params
     // Taking fouls mapping in json
     QVariantMap gameParamsMap = refereeMap["game"].toMap();
@@ -170,6 +173,14 @@ float Constants::transitionTime() {
     return _transitionTime;
 }
 
+bool Constants::headless() {
+    return _headless;
+}
+
+void Constants::setHeadless(bool headless) {
+    _headless = headless;
+}
+
 QString Constants::gameType() {
     return _gameType;
 }
@@ -273,4 +284,8 @@ bool Constants::blueIsLeftSide() {
 void Constants::swapSides() {
     std::swap(_blueTeamName, _yellowTeamName);
     _blueIsLeftSide = !_blueIsLeftSide;
+}
+
+void Constants::setTransitionTime(float transitionTime) {
+    _transitionTime = transitionTime;
 }

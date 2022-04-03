@@ -65,7 +65,8 @@ void RefereeCore::start() {
     QObject::connect(_vision, SIGNAL(visionUpdated()), _soccerView->getFieldView(), SLOT(updateField()));
 
     // Show GUI
-    _soccerView->show();
+    if (!getConstants()->headless())
+        _soccerView->show();
 
     // Starting entities
     _world->startEntities();

@@ -4,6 +4,7 @@
 #include <src/utils/exithandler/exithandler.h>
 #include <src/refereecore.h>
 #include <src/recorder/recorder.h>
+#include <src/utils/timer/timer.h>
 
 int main(int argc, char *argv[])
 {
@@ -37,6 +38,14 @@ int main(int argc, char *argv[])
                                         QCoreApplication::translate("main", "true|false"));
     parser.addOption(record);
 
+    // Use simulator time
+    QCommandLineOption useSimulatorTime("fast", "Use simulator clock instead of real time clock, 0 transition time");
+    parser.addOption(useSimulatorTime);
+
+    // Run one headless game
+    QCommandLineOption useHeadless("headless", "Run one headless game, prints results and quits");
+    parser.addOption(useHeadless);
+
     // Process parser in app
     parser.process(app);
 
@@ -46,6 +55,15 @@ int main(int argc, char *argv[])
 
     // Initializing constants
     Constants *constants = new Constants(QString(PROJECT_PATH) + "/src/constants/constants.json");
+
+    if(parser.isSet(useSimulatorTime)) {
+        Timer::use_simulator_time = true;
+        constants->setTransitionTime(0);
+    }
+
+    if(parser.isSet(useHeadless)) {
+        constants->setHeadless(true);
+    }
 
     // Check if 3v3 or 5v5 option is set, otherwise close
     if(parser.isSet(use5v5Option) || parser.isSet(use3v3Option)) {

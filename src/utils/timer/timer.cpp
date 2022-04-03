@@ -2,20 +2,36 @@
 
 #include <QDateTime>
 
+std::chrono::high_resolution_clock::time_point Timer::simulator_time = std::chrono::high_resolution_clock::from_time_t(0);
+bool Timer::use_simulator_time = false;
+
 Timer::Timer() {
-    // Updating time1 and time2 with actual time
-    _time1 = std::chrono::high_resolution_clock::now();
-    _time2 = std::chrono::high_resolution_clock::now();
+    if (use_simulator_time) {
+        _time1 = simulator_time;
+        _time2 = simulator_time;
+    } else {
+        // Updating time1 and time2 with actual time
+        _time1 = std::chrono::high_resolution_clock::now();
+        _time2 = std::chrono::high_resolution_clock::now();
+    }
 }
 
 void Timer::start() {
     // Updating time1 with last time
-    _time1 = std::chrono::high_resolution_clock::now();
+    if (use_simulator_time) {
+        _time1 = simulator_time;
+    } else {
+        _time1 = std::chrono::high_resolution_clock::now();
+    }
 }
 
 void Timer::stop() {
     // Updating time2 with last time
-    _time2 = std::chrono::high_resolution_clock::now();
+    if (use_simulator_time) {
+        _time2 = simulator_time;
+    } else {
+        _time2 = std::chrono::high_resolution_clock::now();
+    }
 }
 
 double Timer::getSeconds() {
@@ -49,5 +65,10 @@ QString Timer::getActualTime() {
 }
 
 qint64 Timer::systemTime() {
-    return QDateTime::currentMSecsSinceEpoch();
+    if (use_simulator_time) {
+        auto time = simulator_time.time_since_epoch();
+        return std::chrono::duration_cast<std::chrono::milliseconds>(time).count();
+    } else {
+        return QDateTime::currentMSecsSinceEpoch();
+    }
 }

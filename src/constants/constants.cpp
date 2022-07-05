@@ -289,3 +289,12 @@ void Constants::swapSides() {
 void Constants::setTransitionTime(float transitionTime) {
     _transitionTime = transitionTime;
 }
+
+void Constants::setPortsById(int id) {
+    _visionPort = 10002 + id;
+    _firaPort = 20011 + id;
+    if (id > 0) {
+        _refereePort = 40000 + id;
+        _replacerPort = 50000 + id;
+    }
+}

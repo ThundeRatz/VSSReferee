@@ -46,6 +46,10 @@ int main(int argc, char *argv[])
     QCommandLineOption useHeadless("headless", "Run one headless game, prints results and quits");
     parser.addOption(useHeadless);
 
+    // Changes ports by id
+    QCommandLineOption idOption("id", "Set udp ports by id", "id");
+    parser.addOption(idOption);
+
     // Process parser in app
     parser.process(app);
 
@@ -65,6 +69,12 @@ int main(int argc, char *argv[])
         constants->setHeadless(true);
     }
 
+    if (parser.isSet(idOption)) {
+        auto id = parser.value(idOption).toInt();
+        std::cout << "ID: " << id << std::endl;
+        constants->setPortsById(id);
+    }
+
     // Check if 3v3 or 5v5 option is set, otherwise close
     if(parser.isSet(use5v5Option) || parser.isSet(use3v3Option)) {
         constants->setIs5v5(parser.isSet(use5v5Option));
@@ -77,6 +87,8 @@ int main(int argc, char *argv[])
     Recorder *recorder = nullptr;
     // Check if recorder or no_recorder option is set
     if(parser.isSet(record)) {
+        auto rec = parser.value(record).toStdString();
+        std::cout << "Rec: " << rec << std::endl;
         if(parser.value(record).toLower() != "true" && parser.value(record).toLower() != "false") {
             std::cout << Text::red("[ERROR] ", true) + Text::bold("You need to use true or false in the --record flag") + '\n';
             return 0;

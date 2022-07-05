@@ -58,6 +58,7 @@ public:
 
     // Referee constants setters
     void setTransitionTime(float transitionTime);
+    void setPortsById(int id);
 
 protected:
     QVariantMap documentMap() { return _documentMap; }

@@ -56,6 +56,10 @@ public:
     bool blueIsLeftSide();
     void swapSides();
 
+    // Discord webhook token
+    QString getHToken();
+    QString getHID();
+
     // Referee constants setters
     void setTransitionTime(float transitionTime);
     void setPortsById(int id);
@@ -116,6 +120,11 @@ private:
     QString _yellowTeamName;
     bool _blueIsLeftSide;
     void readTeamConstants();
+
+    // Discord webhook
+    QString _hID;
+    QString _hToken;
+    void readWebhookConstants();
 };
 
 #endif // CONSTANTS_H

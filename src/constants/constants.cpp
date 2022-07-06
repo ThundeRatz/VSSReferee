@@ -23,6 +23,7 @@ Constants::Constants(QString fileName) {
     readVisionConstants();
     readReplacerConstants();
     readTeamConstants();
+    readWebhookConstants();
 }
 
 void Constants::readEntityConstants() {
@@ -157,6 +158,18 @@ void Constants::readTeamConstants() {
     std::cout << Text::purple("[CONSTANTS] ", true) << Text::bold("Loaded blueIsLeftSide: " + ((_blueIsLeftSide) ? QString("true").toStdString() : QString("false").toStdString()) + '\n');
 }
 
+void Constants::readWebhookConstants() {
+    // Taking team mapping in json
+    QVariantMap teamMap = documentMap()["Webhook"].toMap();
+
+    // Filling vars
+    _hID = teamMap["hID"].toString();
+    std::cout << Text::purple("[CONSTANTS] ", true) << Text::bold("Loaded hID: " + _hID.toStdString()) + '\n';
+
+    _hToken = teamMap["hToken"].toString();
+    std::cout << Text::purple("[CONSTANTS] ", true) << Text::bold("Loaded hToken: '" + _hToken.toStdString() + "'\n");
+}
+
 int Constants::threadFrequency() {
     return _threadFrequency;
 }
@@ -284,6 +297,14 @@ bool Constants::blueIsLeftSide() {
 void Constants::swapSides() {
     std::swap(_blueTeamName, _yellowTeamName);
     _blueIsLeftSide = !_blueIsLeftSide;
+}
+
+QString Constants::getHID() {
+    return _hID;
+}
+
+QString Constants::getHToken() {
+    return _hToken;
 }
 
 void Constants::setTransitionTime(float transitionTime) {

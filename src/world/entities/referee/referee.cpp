@@ -53,8 +53,8 @@ void Referee::initialization() {
 
     // Ball play
     addChecker(_ballPlayChecker = new Checker_BallPlay(_vision, getConstants()), 2);
-    connect(_ballPlayChecker, SIGNAL(emitGoal(VSSRef::Color)), _soccerView, SLOT(addGoal(VSSRef::Color)));
-    connect(_ballPlayChecker, SIGNAL(emitGoal(VSSRef::Color)), this, SLOT(goalOccurred(VSSRef::Color)));
+    connect(_ballPlayChecker, SIGNAL(emitGoal(VSSRef::Color)), _soccerView, SLOT(addGoal(VSSRef::Color)), Qt::DirectConnection);
+    connect(_ballPlayChecker, SIGNAL(emitGoal(VSSRef::Color)), this, SLOT(goalOccurred(VSSRef::Color)), Qt::DirectConnection);
     connect(_ballPlayChecker, SIGNAL(emitSuggestion(QString, VSSRef::Color, VSSRef::Quadrant)), _soccerView, SLOT(addSuggestion(QString, VSSRef::Color, VSSRef::Quadrant)));
     _ballPlayChecker->setAtkDefCheckers(_twoAtkChecker, _twoDefChecker);
     _ballPlayChecker->setIsPenaltyShootout(false, VSSRef::Color::NONE);
@@ -149,6 +149,8 @@ void Referee::loop() {
 
     // If game is on, run all checks
     if(_lastFoul == VSSRef::Foul::GAME_ON) {
+        _checkerMutex.lock();
+
         // Take list of registered priorities
         QList<int> priorityKeys = _checkers.keys();
         QList<int>::iterator it;
@@ -171,6 +173,8 @@ void Referee::loop() {
 
         // Reset transition management vars
         resetTransitionVars();
+
+        _checkerMutex.unlock();
     }
     // Else if game is not on, wait, go to stop and set game on again
     else {
@@ -401,6 +405,7 @@ void Referee::sendPenaltiesToNetwork() {
 }
 
 void Referee::processChecker(QObject *checker) {
+    _checkerMutex.lock();
     Checker *occurredChecker = static_cast<Checker*>(checker);
 
     if(occurredChecker->penalty() == VSSRef::Foul::HALT) {
@@ -424,6 +429,7 @@ void Referee::processChecker(QObject *checker) {
     emit saveFrame();
     updatePenaltiesInfo(occurredChecker->penalty(), occurredChecker->teamColor(), occurredChecker->quadrant());
     sendPenaltiesToNetwork();
+    _checkerMutex.unlock();
 }
 
 void Referee::halfPassed() {
@@ -433,7 +439,7 @@ void Referee::halfPassed() {
     if(_gameHalf == VSSRef::Half::SECOND_HALF) {
         std::cout << "second half" << std::endl;
         // If eq goals (go to overtime)
-        if((_soccerView->getLeftTeamGoals() == _soccerView->getRightTeamGoals()) && _soccerView->getStage().toLower() != "group_phase") {
+        if((_soccerView->getLeftTeamGoals() == _soccerView->getRightTeamGoals()) && (_soccerView->getStage().toLower() != "group_phase" && !_soccerView->getStage().toLower().contains("rodada"))) {
             _halfChecker->setIsOvertime(true);
         }
         else {

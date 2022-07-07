@@ -102,7 +102,7 @@ void Referee::initialization() {
 template <typename T>
 void print_stat(std::string name, T value) {
     std::string msg = name + " " + std::to_string(value);
-    std::cout << Text::green("[STATS] ", true) + Text::bold(msg) + '\n';
+    std::cout << Text::green("[STATS] ", true) + Text::bold(msg) << std::endl;
 }
 
 void Referee::print_results() {

@@ -97,7 +97,19 @@ void SoccerView::setupTeams() {
     setupGoals();
 }
 
+template <typename T>
+void print_stat(std::string name, T value) {
+    std::string msg = name + " " + std::to_string(value);
+    std::cout << Text::green("[STATS] ", true) + Text::bold(msg) << std::endl;
+}
+
+void SoccerView::printGoals() {
+    print_stat("left_goals", getLeftTeamGoals());
+    print_stat("right_goals", getRightTeamGoals());
+}
+
 void SoccerView::setupGoals() {
+    printGoals();
     // Setup goals
     char leftGoal[5], rightGoal[5];
     sprintf(leftGoal, "%02d", _leftTeamGoals);

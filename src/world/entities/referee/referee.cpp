@@ -99,17 +99,6 @@ void Referee::initialization() {
     halfPassed();
 }
 
-template <typename T>
-void print_stat(std::string name, T value) {
-    std::string msg = name + " " + std::to_string(value);
-    std::cout << Text::green("[STATS] ", true) + Text::bold(msg) << std::endl;
-}
-
-void Referee::print_results() {
-    print_stat("left_goals", _soccerView->getLeftTeamGoals());
-    print_stat("right_goals", _soccerView->getRightTeamGoals());
-}
-
 void Referee::loop() {
     // Run half checker
     _halfChecker->run();
@@ -119,7 +108,6 @@ void Referee::loop() {
 
 
     if (getConstants()->headless() && _isEndGame) {
-        print_results();
         _soccerView->close();
     }
 

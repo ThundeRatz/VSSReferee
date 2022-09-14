@@ -104,8 +104,10 @@ void print_stat(std::string name, T value) {
 }
 
 void SoccerView::printGoals() {
-    print_stat("left_goals", getLeftTeamGoals());
-    print_stat("right_goals", getRightTeamGoals());
+    std::string left_color = getConstants()->blueIsLeftSide() ? "blue" : "yellow";
+    std::string right_color = getConstants()->blueIsLeftSide() ? "yellow" : "blue";
+    print_stat(left_color+"_goals", getLeftTeamGoals());
+    print_stat(right_color+"_goals", getRightTeamGoals());
 }
 
 void SoccerView::setupGoals() {

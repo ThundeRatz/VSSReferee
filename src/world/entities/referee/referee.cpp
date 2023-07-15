@@ -577,8 +577,6 @@ void Referee::processCollision(VSSRef::Foul foul, VSSRef::Color foulColor, VSSRe
 
     // Send collision suggestion
     emit emitSuggestion("Collision detected, needs to place by default");
-
-    processCollisionDecision();
 }
 
 void Referee::processCollisionDecision() {

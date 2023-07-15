@@ -108,6 +108,11 @@ void Referee::loop() {
     // Send timestamp
     emit sendTimestamp((_halfChecker->isOvertime() ? getConstants()->overtimeHalfTime() : getConstants()->halfTime()), _halfChecker->getTimeStamp(), _gameHalf, _isEndGame);
 
+
+    if (getConstants()->headless() && _isEndGame) {
+        _soccerView->close();
+    }
+
     // Game halted just return
     if(_gameHalted) {
         emit placeBall(_lastBallPosition, Velocity(true, 0.0, 0.0));
@@ -422,9 +427,11 @@ void Referee::processChecker(QObject *checker) {
 }
 
 void Referee::halfPassed() {
+    std::cout << "half passed" << std::endl;
     // Check actual half
     // If has at second half, check if is needed to go to overtime
     if(_gameHalf == VSSRef::Half::SECOND_HALF) {
+        std::cout << "second half" << std::endl;
         // If eq goals (go to overtime)
         if((_soccerView->getLeftTeamGoals() == _soccerView->getRightTeamGoals()) && (_soccerView->getStage().toLower() != "group_phase" && !_soccerView->getStage().toLower().contains("rodada"))) {
             _halfChecker->setIsOvertime(true);
@@ -439,6 +446,7 @@ void Referee::halfPassed() {
     }
     // If has at end of overtime, check if is need to go to penalty shootouts
     else if(_gameHalf == VSSRef::Half::OVERTIME_SECOND_HALF) {
+        std::cout << "overtime" << std::endl;
         // If not eq goals (not go to penalty shootouts)
         if((_soccerView->getLeftTeamGoals() != _soccerView->getRightTeamGoals())) {
             // halt game (end game)
@@ -463,6 +471,7 @@ void Referee::halfPassed() {
 
     // If is penalty shootout, set penalty kick for one team
     if(_gameHalf == VSSRef::Half::PENALTY_SHOOTOUTS) {
+        std::cout << "penalty" << std::endl;
         takeManualFoul(VSSRef::Foul::PENALTY_KICK, _halfKickoff, VSSRef::Quadrant::NO_QUADRANT, true);
         _ballPlayChecker->setIsPenaltyShootout(true, _halfKickoff);
         _stuckedBallChecker->setIsPenaltyShootout(true, _halfKickoff);
@@ -572,6 +581,9 @@ void Referee::processCollision(VSSRef::Foul foul, VSSRef::Color foulColor, VSSRe
 
     // Send collision suggestion
     emit emitSuggestion("Collision detected, needs to place by default");
+
+    //if (getConstants()->headless())
+        processCollisionDecision();
 }
 
 void Referee::processCollisionDecision() {

@@ -43,6 +43,9 @@ void Vision::loop() {
             continue;
         }
 
+        std::chrono::milliseconds step(environmentData.step());
+        Timer::simulator_time = std::chrono::high_resolution_clock::time_point(step);
+
         // Iterate received vision frame
         if(environmentData.has_frame()) {
             // Lock mutex for write

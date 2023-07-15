@@ -18,11 +18,12 @@ public:
     void start();
     void stop();
 
+    Referee *_referee;
+
 private:
     // Modules
     World *_world;
     Vision *_vision;
-    Referee *_referee;
     Replacer *_replacer;
 
     // GUI

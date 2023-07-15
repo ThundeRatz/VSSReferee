@@ -24,6 +24,8 @@ public:
     QString refereeAddress();
     quint16 refereePort();
     float transitionTime();
+    bool headless();
+    void setHeadless(bool headless);
     QString gameType();
     float ballRadius();
     float robotLength();
@@ -61,6 +63,10 @@ public:
     QString getHToken();
     QString getHID();
 
+    // Referee constants setters
+    void setTransitionTime(float transitionTime);
+    void setPortsById(int id);
+
 protected:
     QVariantMap documentMap() { return _documentMap; }
 
@@ -86,6 +92,7 @@ private:
     QString _refereeAddress;
     quint16 _refereePort;
     float _transitionTime;
+    bool _headless;
     QString _gameType;
     float _ballRadius;
     float _robotLength;

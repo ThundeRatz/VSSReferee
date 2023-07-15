@@ -34,7 +34,8 @@
     "Referee":{
     	"refereeAddress": "224.5.23.2",
     	"refereePort": 10003,
-    	"transitionTime": 4.0,
+    	"transitionTime": 0.04,
+		"headless": false,
     	"game":{
     		"gameType": "Group_Phase",
     		"ballRadius": 0.0215,

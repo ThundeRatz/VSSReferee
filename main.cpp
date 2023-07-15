@@ -5,6 +5,7 @@
 #include <src/utils/exithandler/exithandler.h>
 #include <src/refereecore.h>
 #include <src/recorder/recorder.h>
+#include <src/utils/timer/timer.h>
 
 int main(int argc, char *argv[])
 {
@@ -38,6 +39,18 @@ int main(int argc, char *argv[])
                                         QCoreApplication::translate("main", "true|false"));
     parser.addOption(record);
 
+    // Use simulator time
+    QCommandLineOption useSimulatorTime("fast", "Use simulator clock instead of real time clock, 0 transition time");
+    parser.addOption(useSimulatorTime);
+
+    // Run one headless game
+    QCommandLineOption useHeadless("headless", "Run one headless game, prints results and quits");
+    parser.addOption(useHeadless);
+
+    // Changes ports by id
+    QCommandLineOption idOption("id", "Set udp ports by id", "id");
+    parser.addOption(idOption);
+
     // Process parser in app
     parser.process(app);
 
@@ -53,6 +66,21 @@ int main(int argc, char *argv[])
         std::cout << Text::red("[ERROR] ", true) + Text::bold("Invalid specified network interface '" + constants->networkInterface().toStdString() + "'") + '\n';
     }
 
+    if(parser.isSet(useSimulatorTime)) {
+        Timer::use_simulator_time = true;
+        constants->setTransitionTime(0);
+    }
+
+    if(parser.isSet(useHeadless)) {
+        constants->setHeadless(true);
+    }
+
+    if (parser.isSet(idOption)) {
+        auto id = parser.value(idOption).toInt();
+        std::cout << "ID: " << id << std::endl;
+        constants->setPortsById(id);
+    }
+
     // Check if 3v3 or 5v5 option is set, otherwise close
     if(parser.isSet(use5v5Option) || parser.isSet(use3v3Option)) {
         constants->setIs5v5(parser.isSet(use5v5Option));
@@ -65,6 +93,8 @@ int main(int argc, char *argv[])
     Recorder *recorder = nullptr;
     // Check if recorder or no_recorder option is set
     if(parser.isSet(record)) {
+        auto rec = parser.value(record).toStdString();
+        std::cout << "Rec: " << rec << std::endl;
         if(parser.value(record).toLower() != "true" && parser.value(record).toLower() != "false") {
             std::cout << Text::red("[ERROR] ", true) + Text::bold("You need to use true or false in the --record flag") + '\n';
             return 0;

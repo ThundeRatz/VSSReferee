@@ -33,6 +33,7 @@ private:
 
     // Teams
     void setupTeams();
+    void printGoals();
     void setupGoals();
     void setupButtons();
 

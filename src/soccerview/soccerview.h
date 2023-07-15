@@ -53,6 +53,9 @@ private:
     int _leftTeamGoals;
     int _rightTeamGoals;
 
+    // Timestamp for logging
+    float _timestamp;
+
     // Suggestions
     QList<QWidget*> _widgets;
     QMutex _suggestionsMutex;

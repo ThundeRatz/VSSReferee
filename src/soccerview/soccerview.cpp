@@ -98,16 +98,16 @@ void SoccerView::setupTeams() {
 }
 
 template <typename T>
-void print_stat(std::string name, T value) {
+void print_stat(std::string name, T value, std::string half_time, float timestamp) {
     std::string msg = name + " " + std::to_string(value);
-    std::cout << Text::green("[STATS] ", true) + Text::bold(msg) << std::endl;
+    std::cout << Text::green("[STATS] ", true) + Text::yellow("[" + half_time + ":" + std::to_string(timestamp) + "] ", true) + Text::bold(msg) << std::endl;
 }
 
 void SoccerView::printGoals() {
     std::string left_color = getConstants()->blueIsLeftSide() ? "blue" : "yellow";
     std::string right_color = getConstants()->blueIsLeftSide() ? "yellow" : "blue";
-    print_stat(left_color+"_goals", getLeftTeamGoals());
-    print_stat(right_color+"_goals", getRightTeamGoals());
+    print_stat(left_color + "_goals", getLeftTeamGoals(), ui->halfTime->text().toStdString(), _timestamp);
+    print_stat(right_color + "_goals", getRightTeamGoals(), ui->halfTime->text().toStdString(), _timestamp);
 }
 
 void SoccerView::setupGoals() {
@@ -371,6 +371,8 @@ void SoccerView::takeFoul(VSSRef::Foul foul, VSSRef::Color foulColor, VSSRef::Qu
 }
 
 void SoccerView::takeTimeStamp(float halftime, float timestamp, VSSRef::Half half, bool isEndGame) {
+    _timestamp = timestamp;
+
     // If is penalty shootouts, set infinite time
     if(half == VSSRef::Half::PENALTY_SHOOTOUTS) {
         ui->halfTime->setText(QString(VSSRef::Half_Name(half).c_str()));
